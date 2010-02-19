@@ -195,7 +195,7 @@ You can test for various conditions on an AMQP message queue.
       To make sure the rest of the system is in order
       All our message queues must not be backed up
 
-      Scenario: test queue 2
+      Scenario: test queue
         Given I have a AMQP server on rabbit.github.com
         And I want to check on the fork queue
         Then it should have less than 400 messages
@@ -204,6 +204,30 @@ You can test for various conditions on an AMQP message queue.
         
 This has been tested using RabbitMQ but uses the amqp gem which should support
 other backends. See features/amqp_steps.rb for all the available steps.
+
+MySQL
+=====
+
+cucumber-nagios now has support for querying MySQL information.
+
+    Feature: localhost
+      To make sure the rest of the system is in order
+      Our database server should not be overloaded
+
+      Scenario: check running processes count
+        Given I have a MySQL server on localhost
+        And I use the username root
+        Then it should have less than 10 processes
+
+      Scenario: check queries per second
+        Given I have a MySQL server on localhost
+        And I use the username root
+        Then it should have less than 200 select queries per second
+        Then it should have less than 300 queries per second
+        Then it should have less than 5 slow queries pers second
+        Then it should have at least 10 queries per second
+        
+See features/mysql_steps.rb for all the available steps.
 
 Quirks
 ======

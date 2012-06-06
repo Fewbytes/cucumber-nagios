@@ -1,5 +1,4 @@
 require 'rubygems'
-require 'mysql'
 
 AVERAGING_TIMEFRAME = 2
 
@@ -9,31 +8,49 @@ Before do
   @database = nil
 end
 
-#Helper functions
-def run_query(query)
-  Mysql.connect(@host, @username, @password, @database).query(query)
+#below is a hack to fetch a single integer value under both jruby and MRI
+if RUBY_PLATFORM == "java"
+  require "jdbc/mysql"
+
+  def query_integer(query)
+      Java::com.mysql.jdbc.Driver
+      userurl = "jdbc:mysql://#{@host}/#{@database}"
+      @connSelect = java.sql.DriverManager.get_connection(userurl, @username, @password)
+      @stmtSelect = @connSelect.create_statement
+    
+      res = @stmtSelect.execute_query(query)
+      res.next
+      res.getString(1).to_i
+  end
+else #assume MRI
+  require 'mysql'
+
+  def query_integer(query)
+    Mysql.connect(@host, @username, @password, @database).query(query).fetch_row[0].to_i
+  end 
 end
 
+#Helper functions
 def get_process_count()
-  run_query('SHOW PROCESSLIST;').num_rows
+  query_integer('select count(1) from information_schema.processlist;')
 end
 
 def get_table_count(table_like)
-  query = "select count(1) from information_schema.tables where table_schema = '#{@database}' and table_name like '#{table_like}';"
-  run_query(query).fetch_row[0].to_i
+  query_integer("select count(1) from information_schema.tables" +
+                " where table_schema = '#{@database}' and table_name like '#{table_like}';")
 end
 
 def get_global_status_sum(variables)
   in_string = variables.map{ |str| "'#{str}'" }.join(", ")
-  query = "select sum(variable_value) as value from information_schema.global_status where variable_name in(#{in_string});" 
-  run_query(query).fetch_row[0].to_i
+  query_integer("select sum(variable_value) as value from information_schema.global_status" +
+          " where variable_name in(#{in_string});")
 end
 
 def count_global_status_per_second(variables)
-  starting = get_global_status_sum(variables) 
+  start_count = get_global_status_sum(variables) 
   sleep AVERAGING_TIMEFRAME
-  ending = get_global_status_sum(variables) 
-  (ending.to_i-starting.to_i)/AVERAGING_TIMEFRAME
+  end_count = get_global_status_sum(variables) 
+  (end_count-start_count)/AVERAGING_TIMEFRAME
 end
 
 # Step definitions for testing the state of the MySQL server

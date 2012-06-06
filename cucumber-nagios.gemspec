@@ -1,24 +1,37 @@
+# -*- encoding: utf-8 -*-
+$:.push File.expand_path("../lib", __FILE__)
+require 'cucumber/nagios/version'
+
 Gem::Specification.new do |s|
-  s.name = 'cucumber-nagios'
-  s.version = '0.6.7'
-  s.date = '2010-01-16'
-  
-  s.summary = "systems testing plugin for Nagios using Cucumber/Webrat/Mechanize/net-ssh"
-  s.description = "cucumber-nagios lets you write high-level behavioural tests for your web applications and Unix infrastructure that can be plugged into Nagios"
+  s.name        = "cucumber-nagios"
+  s.platform    = Gem::Platform::RUBY
+  s.version     = Cucumber::Nagios::VERSION
+  s.summary     = "Systems testing plugin for Nagios using Cucumber."
+  s.description = "cucumber-nagios helps you write behavioural tests for your systems and infrastructure, that can be plugged into Nagios."
+  s.homepage    = "http://cucumber-nagios.org/"
 
-  s.rubyforge_project = 'cucumber-nagios'
-  s.authors = ['Lindsay Holmwood']
-  s.email = 'lindsay@holmwood.id.au'
-  s.homepage = 'http://auxesis.github.com/cucumber-nagios/'
-  s.has_rdoc = false
+  s.authors     = ["Lindsay Holmwood", "hedgehog"]
+  s.email       = ["lindsay@holmwood.id.au", "hedgehogshiatus@gmail.com"]
 
-  s.add_dependency('templater', '>= 0.5')
-  s.add_dependency('rake', '>= 0.8.3')
-  s.add_dependency('bundler', '>= 0.6.0')
- 
-  s.bindir = "bin"
-  s.executables = %w(cucumber-nagios-gen)
-  s.files = %w(bin/cucumber-nagios-gen lib/cucumber-nagios.rb lib/generators/project/Gemfile lib/generators/project/features lib/generators/project/features/steps lib/generators/project/features/steps/benchmark_steps.rb lib/generators/project/features/steps/ssh_steps.rb lib/generators/project/features/steps/result_steps.rb lib/generators/project/features/steps/webrat_steps.rb lib/generators/project/features/steps/amqp_steps.rb lib/generators/project/features/steps/mysql_steps.rb lib/generators/project/features/support lib/generators/project/features/support/env.rb lib/generators/project/features/support/nagios.rb lib/generators/project/bin lib/generators/project/bin/cucumber-nagios lib/generators/project/bin/cucumber-nagios-gen lib/generators/project/.bzrignore lib/generators/project/.gitignore lib/generators/project/README LICENSE README.md Rakefile lib/generators/project/lib/generators/feature/%feature_name%.feature lib/generators/project/lib/generators/feature/%feature_name%_steps.rb features/support/silent_system.rb features/using.feature features/steps/installing_steps.rb features/steps/using_steps.rb features/steps/creating_steps.rb features/creating.feature features/installing.feature)
+  s.require_paths      = ["lib"]
+  s.files              = `git ls-files`.split(/\r?\n\r?/)
+  s.executables        = s.files.grep(/^bin/) { |f| File.basename(f) }
+  s.default_executable = "cucumber-nagios"
+  s.extra_rdoc_files   = s.files.grep(/^[A-Z]+(\.md)*$/)
+
+  s.add_runtime_dependency     "cucumber", ">= 0.10.0"
+  s.add_runtime_dependency     "rspec", ">= 2.5.0"
+  s.add_runtime_dependency     "aruba", ">= 0.3.3"
+  s.add_runtime_dependency     "cuken", ">= 0.1.1"
+  s.add_runtime_dependency     "ssh-forever", ">= 0.4.0"
+  s.add_runtime_dependency     "webrat", "= 0.7.2"
+  s.add_runtime_dependency     "mechanize", "= 1.0.0"
+  s.add_runtime_dependency     "templater", ">= 1.0.0"
+  s.add_runtime_dependency     "net-ssh", ">= 2.1.0"
+  s.add_runtime_dependency     "amqp", "= 0.6.7"
+  s.add_runtime_dependency     "bundler", ">= 1.0.10"
+  s.add_development_dependency "rake", ">= 0.8.3"
+  s.add_development_dependency "aruba", ">= 0.3.6"
 end
 
 

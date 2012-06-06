@@ -1,41 +1,53 @@
-#!/usr/bin/env ruby 
+#!/usr/bin/env ruby
 
-require 'rubygems'
-require 'fileutils'
-
-begin 
-  require 'cucumber/rake/task'
-   
-  Cucumber::Rake::Task.new do |t|
-    t.cucumber_opts = "--require features/"
-  end
+begin
+  require 'bundler'
+  Bundler::GemHelper.install_tasks
 rescue LoadError
+  puts "Bundler not available. Install it with: gem install bundler"
 end
 
+begin
+  require 'cucumber/rake/task'
+  #Cucumber::Rake::Task.new(:features)
+rescue LoadError
+  task :features do
+    abort "Cucumber is not available. In order to run features, you must: sudo gem install cucumber"
+  end
+end
 
-desc "build gem"
-task :build do 
-  system("gem build cucumber-nagios.gemspec")
+task :default => :features
 
-  FileUtils.mkdir_p('pkg')
+desc "Run Cucumber features"
+task :features do
+  puts "The bundled Cucumber Rake task is broken with Bundler."
+  puts "Invoking Cucumber manually."
   puts
-  Dir.glob("cucumber-nagios-*.gem").each do |gem|
-    dest = File.join('pkg', gem)
-    FileUtils.mv(gem, dest)
-    puts "New gem in #{dest}"
-  end
+  system("cucumber")
 end
 
-desc "push gem"
-task :push do 
-  filenames = Dir.glob("pkg/*.gem")
-  filenames_with_times = filenames.map do |filename| 
-    [filename, File.mtime(filename)] 
-  end
-  
-  oldest = filenames_with_times.sort_by { |tuple| tuple.last }.last
-  oldest_filename = oldest.first
+require 'rake/rdoctask'
+Rake::RDocTask.new do |rdoc|
+  version = File.exist?('VERSION') ? File.read('VERSION') : ""
 
-  command = "gem push #{oldest_filename}"
-  system(command)
+  rdoc.rdoc_dir = 'rdoc'
+  rdoc.title = "cucumber-nagios #{version}"
+  rdoc.rdoc_files.include('README*')
+  rdoc.rdoc_files.include('lib/**/*.rb')
 end
+
+
+require "rake/clean"
+file 'MANIFEST.tmp' do
+  # generate manifest from everything checked into git
+  # this allows us to ignore things using .gitignore
+  sh %{git ls-files > MANIFEST.tmp}
+end
+CLEAN << 'MANIFEST.tmp'
+
+desc "Check the manifest against current files"
+task :check_manifest => [:clean, 'MANIFEST', 'MANIFEST.tmp'] do
+  puts `diff -du MANIFEST MANIFEST.tmp`
+end
+
+CLEAN << '*.gem'

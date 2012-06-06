@@ -1,0 +1,31 @@
+#!/usr/bin/env ruby
+
+require 'pathname'
+
+unless ARGV[0]
+  puts "Usage: #{File.basename(__FILE__)} <feature> [--debug|--pretty]"
+  exit 4
+end
+
+feature_dir   = Pathname.new('features').expand_path
+feature, line = ARGV[0].split(':')
+
+unless File.exist?(feature)
+  puts "Error: feature file '#{feature}' doesn't exist!"
+  exit 4
+end
+
+parts = []
+parts << "cucumber"
+parts << "--require #{feature_dir}" if feature_dir.exist?
+parts << "--format pretty" if ARGV.include?("--pretty")
+parts << "--format Cucumber::Formatter::Nagios" unless ARGV.include?("--pretty")
+parts << "#{line ? "#{feature}:#{line}" : feature }"
+command = parts.join(' ')
+
+if ARGV.grep(/^\-\-debug$/).size > 0
+  puts command
+  puts
+end
+
+system(command) ? exit(0) : exit(2)
